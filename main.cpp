@@ -1,16 +1,24 @@
 #include <iostream>
 #include <Eigen/Dense>
 #include "spacecraft/SpacecraftState.h"
+#include "sensors/IGRF.h"
+#include "orbit/OrbitPropagator.h"
+#include "config/OrbitConfig.h"
+#include "utils/PropagateDate.h"
+
 
 int main() {
-    using namespace spacecraft;
-    Eigen::Quaterniond q_init =
-        Eigen::AngleAxisd(0, Eigen::Vector3d::UnitX()) * Eigen::AngleAxisd(30, Eigen::Vector3d::UnitY()) * Eigen::AngleAxisd(60, Eigen::Vector3d::UnitZ());
-        Eigen::Vector3d omega_init(0.1,-0.1,0.1);
 
-    SpacecraftState state(q_init, omega_init);
-    std::cout << "States: " << state.DCM() << std::endl;
-    std::cout << "Quat: " << state.q.norm() << std::endl;
+    sensors::IGRF igrf("sensors");
+    double decimal_year = utils::getDecimalYear();
+
+
+    Eigen::Vector3d B_ground = igrf.computeNED(-23.5, -46.6, 770.0, decimal_year);
+    std::cout << "B ground (nT):  " << B_ground.transpose() << std::endl;
+    std::cout << "|B| = " << B_ground.norm() << " nT\n" << std::endl;
+
+
+
 
     return 0;
 }

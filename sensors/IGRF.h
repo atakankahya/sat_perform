@@ -22,6 +22,15 @@ namespace sensors {
         static constexpr int NMAX = 13;
         static constexpr int N    = 14;
 
+        static constexpr double RE = 6371.1;
+        static constexpr double WGS84_a = 6378.137;
+        static constexpr double WGS84_e2 = 0.0069437999014;
+
+        double g_ [N][N]{};
+        double h_ [N][N]{};
+        double gSV_ [N][N]{};
+        double hSV_ [N][N]{};
+        double baseEpoch_ {};
 
     };
 

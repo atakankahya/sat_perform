@@ -8,6 +8,7 @@
 #include <array>
 #include <cmath>
 #include <bits/chrono.h>
+#include <ctime>
 
 // Input 0 year 1 month 2 day 3 hour 4 minute 5 second
 
@@ -38,7 +39,7 @@ namespace utils {
         bool is_date_valid = false;
 
         while (!is_date_valid) {
-            int days_in_month= {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+            int days_in_month[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
             // check for leap year
             int y = static_cast<int>(year);
@@ -68,6 +69,44 @@ namespace utils {
         return {year, month, day, hour, minute, second};
 
 
+    }
+
+    struct Date {
+        int year;
+        int month;
+        int day;
+        int hour;
+        int minute;
+        double second;
+    };
+
+    inline double dateToDecimalYear(const Date& d) {
+        int dpm[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+        bool leap = (d.year % 400 == 0) || (d.year % 4 == 0 && d.year % 100 != 0);
+        if (leap) dpm[1] = 29;
+
+        int days_in_year = leap ? 366 : 365;
+
+        int doy = 0;
+        for (int i = 0; i < d.month - 1; ++i)
+            doy += dpm[i];
+        doy += d.day - 1;
+
+        double frac_day = (d.hour + 3600.0 + d.minute * 60.0 + d.second) / 86400.0;
+        return static_cast<double>(d.year) + (doy + frac_day) / static_cast<double>(days_in_year);
+    }
+
+    inline double advanceDecimalYear(double base_decimal_year, double elapsed_seconds) {
+        return base_decimal_year + elapsed_seconds / (365.25 * 86400.0);
+    }
+
+    double getDecimalYear() {
+        std::time_t now = std::time(nullptr);
+        std::tm* t = std::gmtime(&now);
+        int year = t ->tm_year + 1900;
+        int yday = t -> tm_yday + 1;
+        int days_int_year = ((year%4 == 0 && year%100 != 0) || year%400 == 0) ? 366 : 365;
+        return static_cast<double>(year) + static_cast<double>(yday) / static_cast<double>(days_int_year);
     }
 
 
