@@ -10,10 +10,17 @@
 #include "sensors/Magnetosensor.h"
 #include "spacecraft/Kinematics.h"
 #include "utils/Conversions.h"
+#include "config/SatelliteConfig.h"
+#include "controller/BdotController.h"
 
 
 int main() {
     config::SimConfig sim;
+    config::SatelliteConfig sat = config::SatelliteConfig::create(config::SatelliteType::Cubesat3U, false);
+    double k = 3499767.38814494;
+    double meas_interval = 0.2;
+
+    controller::BdotController bdot(k, sat.max_dipole,meas_interval);
     config::OrbitConfig orb = config::OrbitConfig::create(550,97.4);
     orbit::OrbitPropagator prop(orb);
 
@@ -42,28 +49,50 @@ int main() {
     double t_end = sim.t_episode;
     double t = 0.0;
     int step = 0;
-    int print_every = static_cast<int>(sim.control_period / dt);
+    double meas_phase = 1.0;
+    double control_period = sim.control_period;
 
-    std::cout << std::fixed << std::setprecision(2) << std::setw(10) << t << std::endl;
-    std::cout << "Time (s) " << std::endl;
+    int steps_per_cycle  = static_cast<int>(control_period  / dt);   // 20
+    int meas_phase_steps = static_cast<int>(meas_phase    / dt);   // 10
+    int meas_every       = static_cast<int>(meas_interval / dt);   //  2
+
+    controller::ControlOutput ctrl;
+    ctrl.sign     = Eigen::Vector3d::Zero();
+    ctrl.pulse_ms = Eigen::Vector3d::Zero();
 
 
     while (t < t_end) {
         orbit::LLA lla = prop.getLLA();
         double dec_year  = utils::advanceDecimalYear(decimal_year0,t);
         Eigen::Matrix3d Rb = state.DCM();
-
         Eigen::Vector3d B_body = mag.measure(lla, prop.computeGMST(),dec_year, Rb);
 
 
-        if (step % print_every == 0) {
-            std::cout << std::setw(8) << t << std::endl;
-            std::cout << std::setw(12) << B_body(0) << std::endl;
-            std::cout << std::setw(12) << B_body(1) << std::endl;
-            std::cout << std::setw(12) << B_body(2) << std::endl;
+        int step_in_cycle = step % steps_per_cycle;
+
+        // phase 1 measruement
+
+        if (step_in_cycle < meas_phase_steps && step_in_cycle % meas_every == 0) {            bdot.addMeasurement(B_body);
         }
+
+        //control phase 2
+        if (step_in_cycle == meas_phase_steps) {
+            ctrl = bdot.computeControl(sim.omega_desired);
+            bdot.resetCycle();
+        }
+
+        // actuation phase
+        Eigen::Vector3d m_applied = Eigen::Vector3d::Zero();
+        if (step_in_cycle >= meas_phase_steps) {
+            double time_in_actuation = (step_in_cycle - meas_phase_steps) * dt;
+            m_applied = bdot.getDipole(ctrl,time_in_actuation);
+        }
+
+        //dynamics
+        Eigen::Vector3d tau = controller::BdotController::torque(m_applied, B_body);
         prop.propagate(dt);
 
+        spacecraft::integrateOmega(state,sat.inertia,tau,dt);
         spacecraft::integrateEuler(state,dt);
         t += dt;
         step++;

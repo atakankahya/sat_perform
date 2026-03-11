@@ -16,6 +16,8 @@ namespace spacecraft {
     Eigen::Vector4d computeQdot(const spacecraft::SpacecraftState& state );
 
     void integrateEuler(spacecraft::SpacecraftState& state, double dt);
+    void integrateOmega(spacecraft::SpacecraftState& state, const Eigen::Matrix3d& inertia, const Eigen::Vector3d& tau, double dt);
+
 
 }
 

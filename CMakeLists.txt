@@ -20,4 +20,6 @@ add_executable(sat_perform main.cpp
         orbit/OrbitPropagator.h
         utils/PropagateDate.h
         sensors/IGRF.cpp
-        sensors/IGRF.h)
+        sensors/IGRF.h
+        controller/BdotController.cpp
+        controller/BdotController.h)

@@ -42,4 +42,11 @@ namespace spacecraft {
         q_new.normalize();
         state.q = Eigen::Quaterniond(q_new(3),q_new(0),q_new(1),q_new(2));
     }
+
+    void integrateOmega(spacecraft::SpacecraftState &state, const Eigen::Matrix3d &inertia, const Eigen::Vector3d &tau, double dt) {
+        Eigen::Vector3d h = inertia * state.omega;
+        Eigen::Vector3d omega_dot = inertia.inverse() * (tau - state.omega.cross(h));
+        state.omega += omega_dot * dt;
+
+    }
 }
