@@ -10,12 +10,14 @@
 
 
 
+namespace spacecraft {
+    Eigen::Matrix4d OmegaMatrix(const Eigen::Vector3d& omega);
 
-static Eigen::Matrix4d OmegaMatrix(const Eigen::Vector3d& omega);
+    Eigen::Vector4d computeQdot(const spacecraft::SpacecraftState& state );
 
-static Eigen::Vector4d computeQdot(const spacecraft::SpacecraftState& state );
+    void integrateEuler(spacecraft::SpacecraftState& state, double dt);
 
-void integrateEuler(spacecraft::SpacecraftState& state, double dt);
+}
 
 
 #endif //SAT_PERFORM_KINEMATICS_H

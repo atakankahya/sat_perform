@@ -23,7 +23,7 @@ namespace config {
         double yaw_deg = 60;
 
         //Start date
-        std::array<double, 6> start_date = {2026,3,10,0,0,0};
+        std::array<double, 6> start_date = {2023,3,28,0,45,0};
     };
 }
 

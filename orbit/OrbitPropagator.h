@@ -40,6 +40,8 @@ namespace orbit {
         [[nodiscard]] double getTrueAnomaly_deg() const;
         [[nodiscard]] double getElapsedTime() const{return elapsed_time_;};
 
+        [[nodiscard]] double computeGMST() const;
+
     private:
         double a_;
         double e_;
@@ -61,7 +63,6 @@ namespace orbit {
         [[nodiscard]] double eccentricToTrue(double E) const;
         [[nodiscard]] double trueToMean(double nu) const;
         [[nodiscard]] Eigen::Matrix3d perifocalToECI_DCM() const;
-        [[nodiscard]] double computeGMST() const;
         [[nodiscard]] Eigen::Vector3d eciToECEF(const Eigen::Vector3d& r_eci) const;
         [[nodiscard]] LLA ecefToLLA(const Eigen::Vector3d& r_ecef) const;
 

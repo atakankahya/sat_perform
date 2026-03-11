@@ -22,6 +22,36 @@ namespace utils {
         return Eigen::Quaterniond(q(0),q(1),q(2),q(3));
     }
 
+    //NED to ecef dcm
+    inline Eigen::Matrix3d nedToECEFDCM(double lat_deg, double lon_deg) {
+        constexpr double D2R = M_PI / 180.0;
+        double lat = lat_deg * D2R;
+        double lon = lon_deg * D2R;
+        double slat = std::sin(lat);
+        double clat = std::cos(lat);
+        double slon = std::sin(lon);
+        double clon = std::cos(lon);
+
+        Eigen::Matrix3d R;
+        R << -slat * clon,   -slon,   -clat * clon,
+        -slat * slon,    clon,   -clat * slon,
+         clat,            0.0,   -slat;
+        return R;
+    }
+
+    //ecef to eci rotation matrix
+    inline Eigen::Matrix3d ecefToEciDCM(double gmst_rad) {
+        double c = std::cos(gmst_rad);
+        double s = std::sin(gmst_rad);
+        Eigen::Matrix3d R;
+        R <<  c, -s,  0,
+        s,  c,  0,
+        0,  0,  1;
+
+        return R;
+
+    }
+
 }
 
 

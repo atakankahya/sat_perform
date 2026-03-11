@@ -100,13 +100,19 @@ namespace utils {
         return base_decimal_year + elapsed_seconds / (365.25 * 86400.0);
     }
 
-    double getDecimalYear() {
-        std::time_t now = std::time(nullptr);
-        std::tm* t = std::gmtime(&now);
-        int year = t ->tm_year + 1900;
-        int yday = t -> tm_yday + 1;
-        int days_int_year = ((year%4 == 0 && year%100 != 0) || year%400 == 0) ? 366 : 365;
-        return static_cast<double>(year) + static_cast<double>(yday) / static_cast<double>(days_int_year);
+    double getDecimalYear(int year, int month, int day) {
+        std::tm t = {};
+        t.tm_year = year - 1900;
+        t.tm_mon = month - 1;
+        t.tm_mday = day;
+
+        std::mktime(&t);
+
+        int yday = t.tm_yday + 1;
+        bool leap = (year % 4== 0 && year % 100 != 0) || year % 400 == 0;
+        int days_in_year = leap ? 366 : 365;
+
+        return static_cast<double>(year) + static_cast<double>(yday) / static_cast<double>(days_in_year);
     }
 
 

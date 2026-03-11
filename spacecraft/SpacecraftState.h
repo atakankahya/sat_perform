@@ -30,6 +30,7 @@ namespace spacecraft {
         }
 
         // Quaternion to DCM conversion b_eci to b_body
+        // i dont need to build something like in matlab calling eigen enough
         Eigen::Matrix3d DCM() const {
             return q.toRotationMatrix();
         }
