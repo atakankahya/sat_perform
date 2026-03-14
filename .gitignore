@@ -1,0 +1,5 @@
+# Local simulation outputs
+sim_log.csv
+
+# Bundled binary dependency
+libtorch/
