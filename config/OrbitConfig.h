@@ -25,8 +25,8 @@ namespace config {
             orb.altitude = altitude_km;
             orb.inclination = inclination_deg;
             orb.eccentricity = 0.01;
-            orb.RAAN_deg = 0.01;
-            orb.nu_deg = 0.0;
+            orb.RAAN_deg = 0.0;
+            orb.nu_deg = 90.0;
             orb.arpg_deg = 270;
 
             constexpr double R_earth = 6378137.0;

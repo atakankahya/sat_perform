@@ -24,28 +24,43 @@ namespace controller {
         ctrl.pulse_ms = Eigen::Vector3d::Zero();
 
         if (measurements_.size() < 2) return ctrl;
-        // get 5 samples just like in munoz perez
 
-        int n = static_cast<int> (measurements_.size());
-        double total_time = (n-1) * meas_interval_s_;
-        Eigen::Vector3d Bdot = (measurements_.back() - measurements_.front()) / total_time;
+        // Least-squares slope (polyfit degree 1) over N samples
+        int N = static_cast<int>(measurements_.size());
+        double Sx = 0, Sxx = 0;
+        Eigen::Vector3d Sxy = Eigen::Vector3d::Zero();
+        Eigen::Vector3d Sy  = Eigen::Vector3d::Zero();
 
-        //use last measruement as reference
+        for (int i = 0; i < N; i++) {
+            double x = i * meas_interval_s_;
+            Sx  += x;
+            Sxx += x * x;
+            Sxy += x * measurements_[i];
+            Sy  += measurements_[i];
+        }
+
+        double denom = N * Sxx - Sx * Sx;
+        if (std::abs(denom) < 1e-12) return ctrl;
+
+        // Measured dB/dt from linear fit over the measurement phase.
+        Eigen::Vector3d Bdot = (N * Sxy - Sx * Sy) / denom;
+
+        // Use last measurement as reference
         Eigen::Vector3d B_body = measurements_.back();
 
-        Eigen::Vector3d signal = k_ * (omega_desired.cross(B_body)) + Bdot;
+        // Modified B-dot law requested: m_cmd = k * (w_des x B + Bdot)
+        Eigen::Vector3d m_cmd = k_ * (omega_desired.cross(B_body) + Bdot);
 
         for (int i = 0; i < 3; i++) {
-            double mag = std::abs(signal(i));
+            double mag = std::abs(m_cmd(i)) / max_dipole_;
             ctrl.pulse_ms(i) = pulseDuration(mag);
 
-            if (signal(i) > 0) ctrl.sign(i) = 1;
-            else if (signal(i) < 0) ctrl.sign(i) = -1;
-            else  ctrl.sign(i) = 0;
+            if (m_cmd(i) > 0)      ctrl.sign(i) =  1;
+            else if (m_cmd(i) < 0) ctrl.sign(i) = -1;
+            else                     ctrl.sign(i) =  0;
         }
 
         return ctrl;
-
     }
 
 

@@ -14,8 +14,8 @@ namespace config {
         double dt = 0.1;
         double control_period = 2.0;
         double t_episode = 8000.0;
-        Eigen::Vector3d omega_init = {-0.1, 0.1, 0};
-        Eigen::Vector3d omega_desired = {0, 0, 0};
+        Eigen::Vector3d omega_init = {-0.1, 0.1, -0.1};
+        Eigen::Vector3d omega_desired = {0, 0, 0.1};
 
         //Initial attitude
         double roll_deg = 0;
@@ -23,7 +23,7 @@ namespace config {
         double yaw_deg = 60;
 
         //Start date
-        std::array<double, 6> start_date = {2023,3,28,0,45,0};
+        std::array<double, 6> start_date = {2022,1,31,5,4,0};
     };
 }
 

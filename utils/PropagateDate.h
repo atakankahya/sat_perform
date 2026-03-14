@@ -92,7 +92,7 @@ namespace utils {
             doy += dpm[i];
         doy += d.day - 1;
 
-        double frac_day = (d.hour + 3600.0 + d.minute * 60.0 + d.second) / 86400.0;
+        double frac_day = (d.hour * 3600.0 + d.minute * 60.0 + d.second) / 86400.0;
         return static_cast<double>(d.year) + (doy + frac_day) / static_cast<double>(days_in_year);
     }
 
