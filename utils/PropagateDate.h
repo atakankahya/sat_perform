@@ -100,7 +100,7 @@ namespace utils {
         return base_decimal_year + elapsed_seconds / (365.25 * 86400.0);
     }
 
-    double getDecimalYear(int year, int month, int day) {
+    inline double getDecimalYear(int year, int month, int day) {
         std::tm t = {};
         t.tm_year = year - 1900;
         t.tm_mon = month - 1;
