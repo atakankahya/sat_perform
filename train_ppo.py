@@ -10,14 +10,19 @@ Build sat_sim first:
 
 Then: python train_ppo.py
 """
-import os
-os.add_dll_directory(r"C:\Program Files\JetBrains\CLion 2025.3.2\bin\mingw\bin")
+
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.distributions import Categorical
 import time
+import os
+import sys
+if sys.platform == "win32":
+    mingw_path = r"C:\Program Files\JetBrains\CLion 2025.3.2\bin\mingw\bin"
+    if os.path.exists(mingw_path):
+        os.add_dll_directory(mingw_path)
 
 
 import sat_sim

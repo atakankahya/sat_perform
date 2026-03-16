@@ -6,6 +6,7 @@
 #include "IGRF.h"
 
 #include <cmath>
+#include <filesystem>
 #include <fstream>
 #include <sstream>
 #include <stdexcept>
@@ -22,10 +23,10 @@ namespace sensors {
     for (auto& row : gSV_) for (auto& v : row) v = 0.0;
     for (auto& row : hSV_) for (auto& v : row) v = 0.0;
 
-    const std::string path = datadir + "/IGRF14coeffs.dat";
+    const std::filesystem::path path = std::filesystem::path(datadir) / "IGRF14coeffs.dat";
     std::ifstream file(path);
     if (!file.is_open())
-        throw std::runtime_error("IGRF: cannot open " + path);
+        throw std::runtime_error("IGRF: cannot open " + path.string());
 
     std::string line;
     while (std::getline(file, line)) {

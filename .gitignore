@@ -3,3 +3,16 @@ sim_log.csv
 
 # Bundled binary dependency
 libtorch/
+
+# Local build directories and generated CMake state
+cmake-build-*/
+build_python/
+**/CMakeCache.txt
+**/cmake_install.cmake
+**/CMakeFiles/
+**/_deps/
+
+# Python extension modules (platform/python-version specific)
+sat_sim*.pyd
+sat_sim*.so
+sat_sim*.dylib

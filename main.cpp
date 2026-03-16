@@ -14,6 +14,8 @@
 #include "config/SatelliteConfig.h"
 #include "controller/BdotController.h"
 #include <fstream>
+#include <filesystem>
+#include <stdexcept>
 
 int main() {
     config::SimConfig sim;
@@ -26,7 +28,16 @@ int main() {
     const double gmst0 = utils::computeGMST(sim.start_date, 0.0);
     orbit::OrbitPropagator prop(orb, gmst0);
 
-    sensors::IGRF igrf("sensors");
+    std::filesystem::path sensors_dir = "sensors";
+    const std::filesystem::path coeff_file = sensors_dir / "IGRF14coeffs.dat";
+    if (!std::filesystem::exists(coeff_file)) {
+        throw std::runtime_error(
+            "IGRF coefficients not found at " + coeff_file.string() +
+            ". Run the executable from the repository root (where sensors/ exists)."
+        );
+    }
+
+    sensors::IGRF igrf(sensors_dir.string());
     sensors::MagnetoSensor mag(igrf);
 
     Eigen::Quaterniond q0 = utils::eulerToQuaternion(
