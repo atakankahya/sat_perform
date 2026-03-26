@@ -37,7 +37,6 @@ set(SIM_HEADERS
 
 add_executable(sat_perform main.cpp ${SIM_SOURCES} ${SIM_HEADERS})
 target_include_directories(sat_perform PRIVATE ${PROJECT_INCLUDE_DIRS})
-
 add_executable(debug_magnetic
         spacecraft/SpacecraftState.cpp
         spacecraft/Kinematics.cpp

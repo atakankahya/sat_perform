@@ -21,7 +21,8 @@ SatEnv::SatEnv(const std::string &igrf_datadir)
 
 
 double SatEnv::normalize(double x, double xmin, double xmax) {
-    return (x- xmin) / (xmax - xmin);
+    double val = (x- xmin) / (xmax - xmin);
+    return std::clamp(val,0.0,1.0);
 }
 
 
@@ -75,10 +76,10 @@ std::array<double, SatEnv::OBS_DIM> SatEnv::buildObs(
         normalize(Bmean_nT(0), BMEAN_MIN, BMEAN_MAX),
         normalize(Bmean_nT(1), BMEAN_MIN, BMEAN_MAX),
         normalize(Bmean_nT(2), BMEAN_MIN, BMEAN_MAX),
-        normalize(std::abs(w_err(0)), WERR_MIN, WERR_MAX),
-        normalize(std::abs(w_err(1)), WERR_MIN, WERR_MAX),
-        normalize(std::abs(w_err(2)), WERR_MIN, WERR_MAX),
-    };
+        normalize(w_err(0), -WERR_MAX, WERR_MAX),
+        normalize(w_err(1), -WERR_MAX, WERR_MAX),
+        normalize(w_err(2), -WERR_MAX, WERR_MAX),
+            };
 }
 
 
@@ -194,6 +195,10 @@ std::tuple<std::array<double, SatEnv::OBS_DIM>, double, bool> SatEnv::step(int a
 
     double r_base = computeBaseReward();
     double reward = computeFilteredReward(r_base);
+
+
+
+
 
     return {buildObs(Bdot, Bmean), reward, done};
 }

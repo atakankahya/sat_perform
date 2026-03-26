@@ -15,6 +15,56 @@
 
 namespace sensors {
 
+namespace {
+
+std::filesystem::path findIGRFCoeffsFile(const std::string& datadir,
+                                         std::vector<std::filesystem::path>& tried) {
+    namespace fs = std::filesystem;
+    const fs::path file_name = "IGRF14coeffs.dat";
+
+    const auto check = [&](const fs::path& p) -> bool {
+        tried.push_back(p);
+        return fs::exists(p) && fs::is_regular_file(p);
+    };
+
+    const fs::path data_path(datadir);
+    if (!data_path.empty()) {
+        if (data_path.has_filename() && data_path.filename() == file_name) {
+            if (check(data_path)) return data_path;
+        }
+        const fs::path with_name = data_path / file_name;
+        if (check(with_name)) return with_name;
+    }
+
+    const fs::path cwd = fs::current_path();
+    if (!data_path.empty()) {
+        const fs::path cwd_joined = cwd / data_path / file_name;
+        if (check(cwd_joined)) return cwd_joined;
+    }
+    const fs::path cwd_sensors = cwd / "sensors" / file_name;
+    if (check(cwd_sensors)) return cwd_sensors;
+
+    fs::path probe = cwd;
+    for (int i = 0; i < 8; ++i) {
+        const fs::path candidate = probe / "sensors" / file_name;
+        if (check(candidate)) return candidate;
+        if (!probe.has_parent_path()) break;
+        const fs::path parent = probe.parent_path();
+        if (parent == probe) break;
+        probe = parent;
+    }
+
+#ifdef SAT_PERFORM_SOURCE_DIR
+    const fs::path source_dir(SAT_PERFORM_SOURCE_DIR);
+    const fs::path source_candidate = source_dir / "sensors" / file_name;
+    if (check(source_candidate)) return source_candidate;
+#endif
+
+    return {};
+}
+
+} // namespace
+
     IGRF::IGRF(const std::string& datadir)
     : baseEpoch_(2025.0)
 {
@@ -23,7 +73,19 @@ namespace sensors {
     for (auto& row : gSV_) for (auto& v : row) v = 0.0;
     for (auto& row : hSV_) for (auto& v : row) v = 0.0;
 
-    const std::filesystem::path path = std::filesystem::path(datadir) / "IGRF14coeffs.dat";
+    std::vector<std::filesystem::path> tried_paths;
+    const std::filesystem::path path = findIGRFCoeffsFile(datadir, tried_paths);
+    if (path.empty()) {
+        std::ostringstream oss;
+        oss << "IGRF: cannot find IGRF14coeffs.dat. "
+            << "Requested datadir='" << datadir << "', cwd='"
+            << std::filesystem::current_path().string() << "'. Tried:";
+        for (const auto& p : tried_paths) {
+            oss << "\n  - " << p.string();
+        }
+        throw std::runtime_error(oss.str());
+    }
+
     std::ifstream file(path);
     if (!file.is_open())
         throw std::runtime_error("IGRF: cannot open " + path.string());

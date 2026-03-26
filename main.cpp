@@ -138,12 +138,28 @@ int main() {
     }
 
     std::cout << std::fixed << std::setprecision(6);
+
+    const Eigen::Vector3d err0 = sim.omega_init - sim.omega_desired;
+    const Eigen::Vector3d errf = state.omega - sim.omega_desired;
+    const double e0 = err0.norm();
+    const double ef = errf.norm();
+
+    double reduction_to_target_pct = 0.0;
+    if (e0 > 1e-12) {
+        reduction_to_target_pct = (1.0 - ef / e0) * 100.0;
+    } else {
+        reduction_to_target_pct = (ef <= 1e-12) ? 100.0 : 0.0;
+    }
+
+    std::cout << "Desired omega: " << sim.omega_desired.transpose()
+              << "  norm = " << sim.omega_desired.norm() << " rad/s\n";
     std::cout << "Initial omega: " << sim.omega_init.transpose()
               << "  norm = " << sim.omega_init.norm() << " rad/s\n";
     std::cout << "Final omega:   " << state.omega.transpose()
               << "  norm = " << state.omega.norm() << " rad/s\n";
-    std::cout << "Reduction:     "
-              << (1.0 - state.omega.norm() / sim.omega_init.norm()) * 100.0 << " %\n";
+    std::cout << "Initial error norm: " << e0 << " rad/s\n";
+    std::cout << "Final error norm:   " << ef << " rad/s\n";
+    std::cout << "Reduction to target: " << reduction_to_target_pct << " %\n";
 
     csv.close();
     return 0;
